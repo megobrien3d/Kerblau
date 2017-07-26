@@ -17,15 +17,11 @@
 # canvas = Canvas(root)
 # canvas.pack()
 #
-# rect = canvas.create_rectangle(10,10,20,20,fill='#000000')
-#
 # def test():
 #     lbl['text'] = 'Goodbye!'
 #
 # btn = Button(root, text='Byebye', command=test)
 # btn.pack()
-#
-# raw_input()
 
 # def update_player_pos(ppx,ppy,direction):
 #     player_color = '#000000' #black
