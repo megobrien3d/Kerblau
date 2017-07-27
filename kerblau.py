@@ -1,58 +1,3 @@
-
-# start_time = time.time()
-#
-# end_time = time.time()
-#
-# print(end_time - start_time)
-#
-# SCREEN_WIDTH = Tk().winfo_screenwidth()
-# SCREEN_HEIGHT = Tk().winfo_screenheight()
-#
-# root = Tk()
-# root.geometry('360x480+460+180')
-#
-# lbl = Label(root, text='Hello Fam.')
-# lbl.pack()
-#
-# canvas = Canvas(root)
-# canvas.pack()
-#
-# def test():
-#     lbl['text'] = 'Goodbye!'
-#
-# btn = Button(root, text='Byebye', command=test)
-# btn.pack()
-
-# def update_player_pos(ppx,ppy,direction):
-#     player_color = '#000000' #black
-#
-#     if direction == 'w': # up
-#         ppy = ppy + 1
-#     elif direction == 'a': # left
-#         ppx = ppx - 1
-#     elif direction == 's': # down
-#         ppy = ppy - 1
-#     elif direction == 'd': # right
-#         ppx = ppx + 1
-#     canvas.create_rectangle(ppx,ppy,ppx+TERRAIN_WIDTH,ppy+GAME_HEIGHT,fill=player_color)
-#
-#     return (ppx,ppy)
-
-
-# IDEAr: have the terrain move randomly either up down left or right for a period of time
-
-
-# generate "terrain" continuously
-    # terrain gets more frequent as game goes on and game gets faster
-# show person on the board and allow them to move side to side / shoot
-# destroy "terrain" if the person hits it
-# end game if the person gets hit by "terrain"
-
-
-# Generate terrain
-    # ten pixels: good size
-    # it'd be cool to autoset the screen to come up in an aesthetically pleasing location (center-ish), but I might not be able to do so
-
 from Tkinter import *
 
 import time
@@ -134,6 +79,13 @@ def show_board(board):
     return (board_squares, sqr_coords)
 
 
+def delete_index(list, index):
+    return list[0:index] + list[index+1::]
+
+def square_center(xleft,ytop,xright,ybottom):
+    return ((xleft+xright)/2, (ytop+ybottom)/2)
+
+
 def main():
     board = starting_board()
     (board_squares, sqr_coords) = show_board(board)
@@ -154,9 +106,31 @@ def main():
 
         for j in xrange(0, len(shots)):
             (xleft, ytop, xright, ybottom) = shots_coords[j]
-            canvas.coords(shots[j], xleft, ytop-SHOOTING_SPEED, xright, ybottom-SHOOTING_SPEED)
 
-            shots_coords[j] = xleft, ytop-SHOOTING_SPEED, xright, ybottom-SHOOTING_SPEED
+            new_xleft, new_ytop, new_xright, new_ybottom = xleft, ytop-SHOOTING_SPEED, xright, ybottom-SHOOTING_SPEED
+
+            canvas.coords(shots[j], new_xleft, new_ytop, new_xright, new_ybottom)
+
+            shots_coords[j] = new_xleft, new_ytop, new_xright, new_ybottom
+
+            for i in xrange(0, len(board_squares)):
+
+                (x_left, y_bottom, x_right, y_top) = sqr_coords[i]
+                (shotx, shoty) = square_center(new_xleft, new_ytop, new_xright, new_ybottom)
+
+                if (shotx >= x_left and shotx <= x_right and shoty >= y_bottom and shoty <= y_top):
+
+                    kxleft, kytop, kxright, kybottom = min(new_xleft, x_left), max(new_ytop, y_top), max(new_xright, x_right), min(new_ybottom, y_bottom)      # kerblau coordinates
+
+                    kerblau = canvas.create_rectangle(kxleft, kytop, kxright, kybottom, fill = 'orange')
+
+                    canvas.delete(shots[j])
+                    shots_coords = delete_index(shots_coords, j)
+                    canvas.delete(board_squares[i])
+                    sqr_coords = delete_index(sqr_coords, i)
+
+                    canvas.delete(kerblau)
+
 
         root.after(2000/TERRAIN_SPEED, move_terrain)
 
